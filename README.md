@@ -55,6 +55,7 @@ This role supports the following systems:
  * (Open)Suse
  * Windows (Best effort)
  * FreeBSD (Best effort)
+ * Archlinux (only "online" mode)
 
 So, you'll need one of those systems.. :-)
 Please sent Pull Requests or suggestions when you want to use this role for other systems.
@@ -289,6 +290,7 @@ Telegraf plugin options:
 * `interval`: How often to gather this metric. Normal plugins use a single global interval, but if one particular plugin should be run less or more often, you can configure that here.
 * `filter.name`: Like when there is an extra filter that needs to be configured, like `grok` for a `logparser` plugin.
 * `filter.config`: The extra configuration for the - in the `filter.name` example - `grok` filter. (See example below)
+* `sub_inputs`: If the input requires other sub inputs, you can add them here (see example below).
 
 An example might look like this:
 
@@ -324,6 +326,30 @@ When you want to make use of the `grok` filter for the logparser:
 			name: grok
 			config:
 			- patterns = ["invoked oom-killer"]
+
+When you want to include a sub inputs with their own configuration:
+```yaml
+sqs:
+  plugin: cloudwatch
+  config:
+    - region = "eu-west-1"
+    - access_key = "foo"
+    - secret_key = "bar"
+    - period = "1m"
+    - delay  = "2m"
+    - interval = "1m"
+    - namespace = "AWS/SQS"
+    - statistic_include = ["average"]
+  sub_inputs:
+    metrics:
+      - names = [
+          "ApproximateAgeOfOldestMessage",
+          "ApproximateNumberOfMessagesVisible",
+        ]
+    metrics.dimensions:
+      - name = "QueueName"
+      - value = "*"
+```
 
 ## Dependencies
 
